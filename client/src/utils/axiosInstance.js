@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", // 🔹 Replace with your backend base URL
+  baseURL: "https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app/api", // 🔹 Replace with your backend base URL
 });
 
 // Request interceptor
