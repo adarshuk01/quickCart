@@ -66,7 +66,7 @@ const MiddleBar = ({toogleshow}) => {
                     
 
             </div>
-          <Link to={'/register'}><User /></Link>
+          <Link to={'/profile'}><User /></Link>
           <Link><Heart/></Link>
           <Link to="/mycart" className="relative">
             <ShoppingCart />

@@ -1,12 +1,14 @@
 import { createContext, useEffect, useState } from "react";
 import { productData } from "../assets/Data/productData";
 import axios from "axios";
+import useAxios from "../Hooks/useAxios";
 
 export const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
   const [compareData, setCompareData] = useState([]);
   const [filteredData, setFilteredData] = useState([])
+   const axios = useAxios();
 
 
   const [categories, setcategories] = useState([])

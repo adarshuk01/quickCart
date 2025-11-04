@@ -6,6 +6,8 @@ import { CartContext } from '../context/CartContext'
 function CheckoutPage() {
   const [activeStep, setActiveStep] = useState(1)
   const { cart, fetchCart } = useContext(CartContext)
+  const [orderDetails, setOrderDetails] = useState(null);
+
   console.log(cart);
 
   useEffect(() => {
@@ -60,15 +62,19 @@ function CheckoutPage() {
             <div className="flex items-center mb-4">
               <span
                 className={`w-8 h-8 flex items-center justify-center rounded-full font-bold mr-3 ${activeStep >= 1
-                    ? "bg-black text-white"
-                    : "bg-gray-200 text-gray-700"
+                  ? "bg-black text-white"
+                  : "bg-gray-200 text-gray-700"
                   }`}
               >
                 1
               </span>
               <h2 className="text-xl font-semibold">Shipping address</h2>
             </div>
-            <ShippingAddress onContinue={() => setActiveStep(2)} />
+            <ShippingAddress  onContinue={(order) => {
+              
+    setOrderDetails(order);
+    setActiveStep(2);
+  }} />
           </div>
 
           {/* Step 2 - Payment */}
@@ -76,8 +82,8 @@ function CheckoutPage() {
             <div className="flex items-center mb-4">
               <span
                 className={`w-8 h-8 flex items-center justify-center rounded-full font-bold mr-3 ${activeStep === 2
-                    ? "bg-black text-white"
-                    : "bg-gray-200 text-gray-700"
+                  ? "bg-black text-white"
+                  : "bg-gray-200 text-gray-700"
                   }`}
               >
                 2
@@ -85,8 +91,9 @@ function CheckoutPage() {
               <h2 className="text-xl font-semibold">Payment</h2>
             </div>
 
-            {activeStep === 2 && <Payment />}
-          </div>
+{activeStep === 2 && orderDetails && (
+  <Payment orderId={orderDetails._id} totalAmount={orderDetails.totalAmount} />
+)}          </div>
         </div>
       </div>
 

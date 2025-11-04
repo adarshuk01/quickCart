@@ -7,10 +7,12 @@ import { ProductProvider } from './context/ProductContext.jsx'
 import { CategoryProvider } from './context/CategoryContext.jsx'
 import { DiscountProvider } from './context/DiscountContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { OrderProvider } from './context/OrderContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
+    <OrderProvider>
     <ProductProvider>
       <CategoryProvider>
         <DiscountProvider>
@@ -20,6 +22,7 @@ createRoot(document.getElementById('root')).render(
     </DiscountProvider>
     </CategoryProvider>
     </ProductProvider>
+    </OrderProvider>
     </BrowserRouter>
   </StrictMode>,
 )

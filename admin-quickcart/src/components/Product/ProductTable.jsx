@@ -9,7 +9,7 @@ const ProductTable = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const productsPerPage = 5;
+  const productsPerPage = 10;
 
   // Decide which data to display: searched results or all products
   const dataToShow = filteredProduct.length > 0 ? filteredProduct : products;

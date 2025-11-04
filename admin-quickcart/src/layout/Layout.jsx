@@ -37,7 +37,7 @@ function Layout() {
   }, [location]);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col lg:h-screen overflow-hidden">
       {/* Top Navbar */}
       <Navbar toggleSidebar={toggleSidebar} />
 
@@ -64,7 +64,7 @@ function Layout() {
         )}
 
         {/* Page Content */}
-        <div className="flex-1 bg-[#F5F6FA] p-4 lg:p-6 overflow-y-auto">
+        <div className="flex-1 bg-[#F5F6FA] p-4 overflow-scroll lg:p-6 ">
           <Outlet />
         </div>
       </div>

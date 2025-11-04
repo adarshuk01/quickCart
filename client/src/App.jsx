@@ -6,6 +6,8 @@ import OfferPage from './pages/OfferPage';
 import ProductDetails from './pages/ProductDetails';
 import MyCart from './pages/MyCart';
 import CheckoutPage from './pages/CheckoutPage';
+import Profile from './pages/Profile';
+import ProtectedRoute from './ProtectedRoute';
 
 // Lazy-loaded pages
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -17,30 +19,31 @@ const Collection = lazy(() => import('./pages/Collection'));
 const AboutUs = lazy(() => import('./pages/AboutUs'));
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
         <Route element={<Layout />}>
-          <Route path='/' element={<HomePage />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/login' element={<Login />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
 
           <Route element={<NewsLayout />}>
-            <Route path='/news' element={<NewsPage />} />
-            <Route path='/news/:id' element={<NewsDetails />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/news/:id" element={<NewsDetails />} />
           </Route>
 
-          <Route path='/:category/:subCategory?' element={<Collection />} />
-          <Route path='/company/:category' element={<AboutUs />} />
-          <Route path='/offers/:id' element={<OfferPage />} />
-          <Route path='/product/:id' element={<ProductDetails />} />
-          <Route path='/mycart' element={<MyCart />} />
-          <Route path='/checkout' element={<CheckoutPage />} />
+          <Route path="/:category/:subCategory?" element={<Collection />} />
+          <Route path="/company/:category" element={<AboutUs />} />
+          <Route path="/offers/:id" element={<OfferPage />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
 
+          {/* ✅ Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+                      <Route path="/mycart" element={<MyCart />} />
 
-
+          </Route>
         </Route>
       </Routes>
     </Suspense>

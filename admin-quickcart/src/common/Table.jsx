@@ -50,12 +50,12 @@ const DataTable = ({
             <th className="px-4 py-3">
               <input
                 type="checkbox"
-                checked={selectedRows.length === data.length && data.length > 0}
+                checked={selectedRows?.length === data?.length && data?.length > 0}
                 onChange={onSelectAll}
                 className="w-4 h-4 rounded"
               />
             </th>
-            {columns.map((col) => (
+            {columns?.map((col) => (
               <th key={col.key} className="px-4 py-3 font-medium">{col.title}</th>
             ))}
           </tr>
@@ -68,7 +68,7 @@ const DataTable = ({
               </td>
             </tr>
           ) : (
-            data.map((row, i) => (
+            data?.map((row, i) => (
               <tr key={i} className="border-b border-gray-300 hover:bg-gray-50">
                 <td className="px-4 py-3">
                   <input
@@ -91,7 +91,7 @@ const DataTable = ({
 
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
-        <div>{data.length} Results</div>
+        <div>{data?.length} Results</div>
         <div className="flex items-center space-x-1">
           <button
             disabled={currentPage === 1}

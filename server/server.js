@@ -11,6 +11,10 @@ const discountRoutes = require('./routes/discountRoutes');
 const geminiRoutes = require('./routes/geminiRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes =require('./routes/orderRoutes')
+const paymentRoutes =require('./routes/paymentRoutes')
+
+require('dotenv').config();
+
 
 const cors = require('cors');
 
@@ -30,10 +34,9 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 
-const MONGO_URI = 'mongodb+srv://adarshdhanwis:KzvLq3ubZItkxcwP@cluster0.xqnmw.mongodb.net/quickCart'; // or your MongoDB Atlas URI
 
 
-mongoose.connect(MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
@@ -52,6 +55,7 @@ app.use('/api/discounts', discountRoutes);
 app.use('/api/gemini', geminiRoutes);
 app.use('/api/cart', cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/payment", paymentRoutes);
 
 
 

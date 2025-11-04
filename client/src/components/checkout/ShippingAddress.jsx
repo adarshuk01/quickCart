@@ -1,6 +1,11 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react';
+import useAxios from '../../Hooks/useAxios';
+import { CartContext } from '../../context/CartContext';
 
 function ShippingAddress({ onContinue }) {
+  const axios = useAxios();
+  const { cart, fetchCart } = useContext(CartContext);
+
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -8,20 +13,60 @@ function ShippingAddress({ onContinue }) {
     zip: '',
     city: '',
     state: ''
-  })
+  });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleContinue = () => {
-    // Simple validation (you can expand it)
+  const handleContinue = async () => {
     if (!form.firstName || !form.lastName || !form.address1 || !form.zip || !form.city || !form.state) {
-      alert('Please fill all required fields')
-      return
+      alert("Please fill all required fields");
+      return;
     }
-    onContinue()
-  }
+
+  
+
+    try {
+      setLoading(true);
+
+      const shippingAddress = {
+        fullName: `${form.firstName} ${form.lastName}`,
+        address: form.address1,
+        city: form.city,
+        postalCode: form.zip,
+        country: form.state,
+      };
+
+      const res = await axios.post("/orders", {
+       
+        items: cart.items.map(item => ({
+          product: item.product._id,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+        shippingAddress,
+        paymentMethod: "razorpay",
+        totalAmount: cart.totalPrice,
+      });
+      console.log(res);
+      
+
+      const order = res.data.savedOrder;
+      if (!order) {
+        alert("Order creation failed");
+        return;
+      }
+
+      onContinue(order); // ✅ Pass order details to payment step
+    } catch (err) {
+      console.error("Error creating order:", err.response?.data || err.message);
+      alert("Error creating order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <form className="space-y-4 mt-4">
@@ -83,12 +128,15 @@ function ShippingAddress({ onContinue }) {
       <button
         type="button"
         onClick={handleContinue}
-        className="mt-4 bg-black text-white px-6 py-3 rounded-md font-medium"
+        disabled={loading}
+        className={`mt-4 px-6 py-3 rounded-md font-medium text-white ${
+          loading ? "bg-gray-400" : "bg-black hover:bg-gray-800"
+        }`}
       >
-        Continue to payment
+        {loading ? "Processing..." : "Continue to payment"}
       </button>
     </form>
-  )
+  );
 }
 
-export default ShippingAddress
+export default ShippingAddress;
