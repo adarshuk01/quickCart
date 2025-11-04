@@ -8,6 +8,7 @@ import MyCart from './pages/MyCart';
 import CheckoutPage from './pages/CheckoutPage';
 import Profile from './pages/Profile';
 import ProtectedRoute from './ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 // Lazy-loaded pages
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -21,6 +22,7 @@ const AboutUs = lazy(() => import('./pages/AboutUs'));
 function App() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
+      <ScrollToTop/>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
