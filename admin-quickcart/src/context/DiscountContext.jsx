@@ -92,7 +92,7 @@ export const DiscountProvider = ({ children }) => {
 
   const generateDiscountImage = async (title) => {
     try {
-      const res = await axiosInstance.post('http://localhost:5000/api/gemini/generate-image', {
+      const res = await axiosInstance.post('/gemini/generate-image', {
       prompt: `Generate a high-quality, eye-catching promotional graphic image in landscape mode with a fixed size of 454 × 288 pixels for an offer titled "${title}". 
 The design should visually reflect the theme or context of the title — whether it's a festival, product, category, or seasonal offer. 
 Include relevant elements such as product visuals, festive symbols, or category icons to make the image more appealing. 
