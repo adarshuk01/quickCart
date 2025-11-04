@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app/api",
+  baseURL: "https://quick-cart-henna-alpha.vercel.app/api",
   headers: {
     Authorization: localStorage.getItem("token")
       ? `Bearer ${localStorage.getItem("token")}`

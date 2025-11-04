@@ -10,7 +10,7 @@ import { OrderProvider } from './context/OrderContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HashRouter basename='/'>
+    <BrowserRouter>
     <AuthProvider>
       <ProductProvider>
         <OrderProvider>
@@ -20,6 +20,6 @@ createRoot(document.getElementById('root')).render(
     </OrderProvider>
     </ProductProvider>
     </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   </StrictMode>,
 )

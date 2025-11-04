@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     setLoading(true);
     try {
-      const res = await axiosInstance.post("http://localhost:5000/api/auth/signup", userData);
+      const res = await axiosInstance.post("/auth/signup", userData);
       console.log("✅ Signup Success:", res.data);
       localStorage.setItem("token", res.data.token);
       return { success: true, message: res.data.message };
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   const verifyOtp = async (userData) => {
     setLoading(true);
     try {
-      const res = await axiosInstance.post("http://localhost:5000/api/auth/verify-otp", userData);
+      const res = await axiosInstance.post("/auth/verify-otp", userData);
       console.log("✅ OTP Verified:", res);
       navigate("/");
     } catch (error) {
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const res = await axiosInstance.post("http://localhost:5000/api/auth/login", { email, password });
+      const res = await axiosInstance.post("/auth/login", { email, password });
       console.log("✅ Login Success:", res.data);
       localStorage.setItem("token", res.data.token);
 

@@ -16,7 +16,7 @@ export const ProductProvider = ({ children }) => {
   // fetch category 
   const fetchcategory = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/categories')
+      const res = await axios.get('/categories')
       setcategories(res.data)
 
     } catch (error) {
@@ -30,7 +30,7 @@ export const ProductProvider = ({ children }) => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/products')
+      const res = await axios.get('/products')
       console.log(res);
 
       setproducts(res.data)
@@ -43,7 +43,7 @@ export const ProductProvider = ({ children }) => {
 
   const fetchProductsbyid = async (id) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/products/${id}`)
+      const res = await axios.get(`/products/${id}`)
       console.log(res);
 
       setsingleProduct(res.data)
@@ -141,7 +141,7 @@ export const ProductProvider = ({ children }) => {
   const fetchDiscounts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/discounts/active');
+      const res = await axios.get('/discounts/active');
       console.log(res);
 
       setDiscounts(res.data);
@@ -161,7 +161,7 @@ export const ProductProvider = ({ children }) => {
     
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/discounts/${id}`);
+      const res = await axios.get(`/discounts/${id}`);
       console.log(res);
 
       setDiscount(res.data);
