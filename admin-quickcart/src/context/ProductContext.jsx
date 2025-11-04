@@ -83,7 +83,7 @@ export const ProductProvider = ({ children }) => {
   const fetchDescription = async (prompt) => {
     setLoading(true)
     try {
-      const res = await axiosInstance.post('http://localhost:5000/api/gemini', {
+      const res = await axiosInstance.post('/gemini', {
         prompt: `only give 4 detailed points about features of ${prompt}, no other text required give response as ul li format`,
       });
       return res.data.response; // return this instead of setting to context
@@ -153,7 +153,7 @@ Ensure consistent, natural lighting and realistic shadows across all images.
 
     setImageLoading(true);
     try {
-      const res = await axiosInstance.post('http://localhost:5000/api/gemini/generate-image', {
+      const res = await axiosInstance.post('/gemini/generate-image', {
         prompt: `Generate three high-quality background removed images of a ${prompt} placed on a clean, neutral background.
 
 First image: A single product in a front view, clearly showing the main design and control buttons.
