@@ -18,29 +18,12 @@ require('dotenv').config();
 
 const cors = require('cors');
 
-const allowedOrigins = [
-  'https://quick-cart-gm6k.vercel.app', 
-  'https://quick-cart-gm6k-3qxl75p9z-adarshuk01s-projects.vercel.app', // ✅ add this
-  'https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app',
-  'http://localhost:5173', // optional for local testing
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  })
-);
-
+app.use(cors());
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 app.use('/uploads', express.static('uploads'));
 
