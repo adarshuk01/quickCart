@@ -12,7 +12,7 @@ const navItems = [
   { label: 'HOME', icon: Home, path: '/' },
   { label: 'COLLECTION', icon: Menu, path: '/collection' },
   { label: 'WISHLIST', icon: Heart, path: '/wishlist' },
-  { label: 'ACCOUNT', icon: User, path: '/login' },
+  { label: 'ACCOUNT', icon: User, path: '/profile' },
   { label: 'CART', icon: ShoppingBag, path: '/mycart', badge: 2 },
 ];
 

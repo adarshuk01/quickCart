@@ -122,7 +122,7 @@ const featuredProduct=products.filter(items=>items.isFeatured==true)
 
 
       <Sections productData={featuredProduct.slice(0,7)} label={'FEATURED PRODUCTS'} />
-      <Sections productData={products.slice(5,20)} label={'NEW ARRIVALS'} />
+      <Sections productData={products.slice(0,8)} label={'NEW ARRIVALS'} />
 
       <Banner/>
       <CategorySec label={'BROWSE OUR CATEGORIES'}/>

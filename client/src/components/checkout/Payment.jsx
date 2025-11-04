@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import useAxios from "../../Hooks/useAxios";
+import { useNavigate } from "react-router-dom";
 
 function Payment({ orderId, totalAmount }) {
   const [method, setMethod] = useState("cod");
   const axios = useAxios();
+  const navigate=useNavigate()
 
   const baseURL =
     import.meta.env.VITE_API_BASE_URL || process.env.REACT_APP_API_BASE_URL;
@@ -62,6 +64,8 @@ function Payment({ orderId, totalAmount }) {
         const verifyRes = await axios.post("/orders/verify-payment", response);
         if (verifyRes.data.success) {
           alert("✅ Payment successful!");
+          navigate('/profile')
+
         } else {
           alert("❌ Payment verification failed!");
         }
