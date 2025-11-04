@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
-const upload = require('../middleware/upload');
+
 const verifyAdmin = require('../middleware/verifyAdmin');
+const { upload } = require('../config/cloudinary');
 
 // Create product
 router.post('/', verifyAdmin, upload.array('images', 5), productController.createProduct);

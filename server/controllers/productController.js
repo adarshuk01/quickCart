@@ -4,6 +4,7 @@ const axios = require('axios');
 const fs = require('fs-extra');
 const path = require('path');
 const FormData = require('form-data');
+const { cloudinary } = require('../config/cloudinary');
 
 
 
@@ -37,6 +38,7 @@ async function removeBackground(filePath, outputFilePath) {
 exports.createProduct = async (req, res) => {
   try {
     console.log('Files received:', req.files);
+
     const {
       name,
       description,
@@ -47,9 +49,8 @@ exports.createProduct = async (req, res) => {
       isFeatured,
     } = req.body;
 
-    const imagePaths = req.files.map((file) => {
-      return `http://localhost:5000/uploads/${file.filename}`; // use correct filename, not ext
-    });
+    // ✅ Cloudinary URLs instead of local paths
+    const imageUrls = req.files.map((file) => file.path);
 
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
@@ -60,7 +61,7 @@ exports.createProduct = async (req, res) => {
       name,
       description,
       price,
-      images: imagePaths,
+      images: imageUrls, // Cloudinary image URLs
       stock,
       category,
       subcategory,
@@ -71,7 +72,10 @@ exports.createProduct = async (req, res) => {
     res.status(201).json(savedProduct);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to create product', details: err.message });
+    res.status(500).json({
+      error: 'Failed to create product',
+      details: err.message,
+    });
   }
 };
 
@@ -108,31 +112,25 @@ exports.updateProduct = async (req, res) => {
       category,
       subcategory,
       isFeatured,
-      existingImages,
+      existingImages, // JSON array of old image URLs
     } = req.body;
 
     let imagePaths = [];
 
-    // Include old images from the request
+    // ✅ Step 1: Include existing images (from request body)
     if (existingImages) {
-      imagePaths = JSON.parse(existingImages); // array of URLs
+      imagePaths = JSON.parse(existingImages); // e.g. ["https://res.cloudinary.com/..."]
     }
 
-    // Handle newly uploaded images
+    // ✅ Step 2: Upload newly added images to Cloudinary
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const ext = path.extname(file.originalname).toLowerCase();
-
-        // Validate file format
-        if (!['.jpg', '.jpeg', '.png'].includes(ext)) {
-          return res.status(400).json({ error: 'Only JPG and PNG files are allowed' });
-        }
-
-        // Use actual filename (no background removal)
-        imagePaths.push(`http://localhost:5000/uploads/${file.filename}`);
+        // file.path is automatically the Cloudinary URL (thanks to multer-storage-cloudinary)
+        imagePaths.push(file.path);
       }
     }
 
+    // ✅ Step 3: Prepare update fields
     const updateFields = {
       name,
       description,
@@ -144,6 +142,7 @@ exports.updateProduct = async (req, res) => {
       images: imagePaths,
     };
 
+    // ✅ Step 4: Update product in DB
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.productId,
       { $set: updateFields },
@@ -154,10 +153,16 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    res.json(updatedProduct);
+    res.json({
+      message: 'Product updated successfully',
+      product: updatedProduct,
+    });
   } catch (err) {
-    console.error(err.response?.data || err);
-    res.status(500).json({ error: 'Failed to update product', details: err.message });
+    console.error('Error updating product:', err);
+    res.status(500).json({
+      error: 'Failed to update product',
+      details: err.message,
+    });
   }
 };
 

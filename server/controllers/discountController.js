@@ -2,6 +2,8 @@ const Discount = require('../models/Discount');
 const Product = require('../models/Product');
 
 // Create or update a discount with product IDs
+const { cloudinary } = require('../config/cloudinary');
+
 exports.createDiscount = async (req, res) => {
   try {
     const {
@@ -14,32 +16,36 @@ exports.createDiscount = async (req, res) => {
       isActive,
     } = req.body;
 
-    console.log(req.body);
-    
+    console.log('Request body:', req.body);
 
-    if (!Array.isArray(products) || products.length === 0) {
+    // ✅ Ensure products list is valid
+    const productArray = Array.isArray(products)
+      ? products
+      : JSON.parse(products || '[]');
+
+    if (!Array.isArray(productArray) || productArray.length === 0) {
       return res.status(400).json({ error: 'Product list must not be empty.' });
     }
 
     // ✅ Check all product IDs exist
-    const existingProducts = await Product.find({ _id: { $in: products } });
-    if (existingProducts.length !== products.length) {
-      const missing = products.filter(
+    const existingProducts = await Product.find({ _id: { $in: productArray } });
+    if (existingProducts.length !== productArray.length) {
+      const missing = productArray.filter(
         id => !existingProducts.find(p => p._id.toString() === id)
       );
       return res.status(404).json({ error: 'Invalid product IDs', missing });
     }
 
-    // ✅ Check if any of the products are already in another discount
+    // ✅ Prevent duplicate discounts on same products
     const conflictingDiscounts = await Discount.find({
-      products: { $in: products }
+      products: { $in: productArray },
     });
 
     if (conflictingDiscounts.length > 0) {
       const conflictProductIds = new Set();
       conflictingDiscounts.forEach(d => {
         d.products.forEach(pid => {
-          if (products.includes(pid.toString())) {
+          if (productArray.includes(pid.toString())) {
             conflictProductIds.add(pid.toString());
           }
         });
@@ -51,17 +57,18 @@ exports.createDiscount = async (req, res) => {
       });
     }
 
-    // ✅ Process image if uploaded
+    // ✅ Handle image upload (Cloudinary)
     let imageUrl = '';
     if (req.file) {
-      imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+      imageUrl = req.file.path; // Cloudinary URL (automatically from multer-storage-cloudinary)
     }
 
+    // ✅ Create discount document
     const discount = new Discount({
       title,
       type,
       value,
-      products,
+      products: productArray,
       startDate,
       endDate,
       isActive,
@@ -70,15 +77,17 @@ exports.createDiscount = async (req, res) => {
 
     const savedDiscount = await discount.save();
 
-    // ✅ If active, apply discount to products
+    // ✅ Apply discount to products if active
     if (isActive) {
       const bulkUpdates = existingProducts.map(product => {
         let discountedPrice = product.price;
+
         if (type === 'percentage') {
           discountedPrice -= (product.price * value) / 100;
         } else if (type === 'fixed') {
           discountedPrice -= value;
         }
+
         if (discountedPrice < 0) discountedPrice = 0;
 
         return {
@@ -99,8 +108,11 @@ exports.createDiscount = async (req, res) => {
 
     res.status(201).json(savedDiscount);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to create discount', details: err.message });
+    console.error('Error creating discount:', err);
+    res.status(500).json({
+      error: 'Failed to create discount',
+      details: err.message,
+    });
   }
 };
 
@@ -202,7 +214,7 @@ exports.getDiscountWithProducts = async (req, res) => {
 exports.updateDiscount = async (req, res) => {
   try {
     const { discountId } = req.params;
-    console.log(discountId);
+    console.log('Updating discount:', discountId);
 
     const {
       title,
@@ -214,40 +226,43 @@ exports.updateDiscount = async (req, res) => {
       isActive,
     } = req.body;
 
-    console.log(req.body);
+    console.log('Request body:', req.body);
 
-    // If image file is uploaded
-    const image = req.file ? `http://localhost:5000/uploads/${req.file.filename}` : null;
+    // ✅ Convert products to array (if sent as string)
+    const productArray = Array.isArray(products)
+      ? products
+      : JSON.parse(products || '[]');
 
-    if (!Array.isArray(products) || products.length === 0) {
+    if (!Array.isArray(productArray) || productArray.length === 0) {
       return res.status(400).json({ error: 'Product list must not be empty.' });
     }
 
-    // Validate product existence
-    const existingProducts = await Product.find({ _id: { $in: products } });
-    if (existingProducts.length !== products.length) {
-      const missing = products.filter(
+    // ✅ Validate product existence
+    const existingProducts = await Product.find({ _id: { $in: productArray } });
+    if (existingProducts.length !== productArray.length) {
+      const missing = productArray.filter(
         id => !existingProducts.find(p => p._id.toString() === id)
       );
       return res.status(404).json({ error: 'Invalid product IDs', missing });
     }
 
+    // ✅ Find discount
     const discount = await Discount.findById(discountId);
     if (!discount) {
       return res.status(404).json({ error: 'Discount not found' });
     }
 
-    // Check if any product is in another discount
+    // ✅ Check for product conflicts (avoid overlap)
     const conflictingDiscounts = await Discount.find({
       _id: { $ne: discountId },
-      products: { $in: products }
+      products: { $in: productArray },
     });
 
     if (conflictingDiscounts.length > 0) {
       const conflictProductIds = new Set();
       conflictingDiscounts.forEach(d => {
         d.products.forEach(pid => {
-          if (products.includes(pid.toString())) {
+          if (productArray.includes(pid.toString())) {
             conflictProductIds.add(pid.toString());
           }
         });
@@ -259,33 +274,51 @@ exports.updateDiscount = async (req, res) => {
       });
     }
 
-    // Remove discount reference from previously assigned products
+    // ✅ Remove discount ref from previously assigned products
     await Product.updateMany(
       { discount: discount._id },
       { $set: { discount: null, discountedPrice: null } }
     );
 
-    // Update discount fields
+    // ✅ Handle new image upload (and delete old one if needed)
+    if (req.file) {
+      // Delete old Cloudinary image if exists
+      if (discount.image && discount.image.includes('cloudinary.com')) {
+        try {
+          const publicId = discount.image.split('/').slice(-1)[0].split('.')[0];
+          await cloudinary.uploader.destroy(`discounts/${publicId}`);
+          console.log('Old image deleted from Cloudinary');
+        } catch (err) {
+          console.warn('Failed to delete old Cloudinary image:', err.message);
+        }
+      }
+
+      // Assign new Cloudinary URL (multer-storage-cloudinary sets req.file.path)
+      discount.image = req.file.path;
+    }
+
+    // ✅ Update discount fields
     discount.title = title;
     discount.type = type;
     discount.value = value;
-    discount.products = products;
+    discount.products = productArray;
     discount.startDate = startDate;
     discount.endDate = endDate;
-    discount.isActive = isActive;
-    if (image) discount.image = image;
+    discount.isActive = isActive === 'true' || isActive === true;
 
     await discount.save();
 
-    if (isActive=="true") {
-      // If active, apply discount to products
+    // ✅ Apply or clear product discounts
+    if (discount.isActive) {
       const bulkUpdates = existingProducts.map(product => {
         let discountedPrice = product.price;
-        if (type === 'percentage') {
-          discountedPrice -= (product.price * value) / 100;
-        } else if (type === 'fixed') {
-          discountedPrice -= value;
+
+        if (discount.type === 'percentage') {
+          discountedPrice -= (product.price * discount.value) / 100;
+        } else if (discount.type === 'fixed') {
+          discountedPrice -= discount.value;
         }
+
         if (discountedPrice < 0) discountedPrice = 0;
 
         return {
@@ -303,24 +336,20 @@ exports.updateDiscount = async (req, res) => {
 
       await Product.bulkWrite(bulkUpdates);
     } else {
-      console.log('products');
-      
-      // If not active, ensure discount fields are cleared
+      // Clear discount references if inactive
       await Product.updateMany(
-        { _id: { $in: products } },
-        {
-          $set: {
-            discount: null,
-            discountedPrice: null,
-          },
-        }
+        { _id: { $in: productArray } },
+        { $set: { discount: null, discountedPrice: null } }
       );
     }
 
-    res.json(discount);
+    res.json({
+      message: 'Discount updated successfully',
+      discount,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update discount' });
+    console.error('Error updating discount:', err);
+    res.status(500).json({ error: 'Failed to update discount', details: err.message });
   }
 };
 

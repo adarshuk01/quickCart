@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const verifyAdmin = require('../middleware/verifyAdmin');
-const upload = require('../middleware/upload');
+const { upload } = require('../config/cloudinary');
+
 
 // Category routes
 router.post('/category',upload.single('image'), categoryController.addCategory);

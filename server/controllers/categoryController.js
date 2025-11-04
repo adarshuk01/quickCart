@@ -1,33 +1,38 @@
 const Category = require('../models/Category');
 
-// Add new category
 exports.addCategory = async (req, res) => {
-  const { name } = req.body;
-
-  let imageUrl = '';
-  if (req.file) {
-    imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
-  }
-
   try {
+    const { name } = req.body;
+
+    // ✅ Cloudinary image URL will be available in req.file.path
+    let imageUrl = '';
+    if (req.file) {
+      imageUrl = req.file.path; // Cloudinary URL
+    }
+
+    // ✅ Check if category already exists
     const existing = await Category.findOne({ name });
     if (existing) {
       return res.status(400).json({ message: 'Category already exists' });
     }
 
+    // ✅ Create and save new category
     const category = new Category({
       name,
-      image: imageUrl,  // ✅ Include image here
+      image: imageUrl,
     });
 
     await category.save();
 
-    res.status(201).json(category);
+    res.status(201).json({
+      message: 'Category created successfully',
+      category,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error adding category:', err);
+    res.status(500).json({ error: 'Failed to add category', details: err.message });
   }
 };
-
 
 
 // Add subcategory to existing category
@@ -60,8 +65,6 @@ exports.addSubCategory = async (req, res) => {
 exports.editCategory = async (req, res) => {
   const { name } = req.body;
   const { id } = req.params;
-  console.log(id);
-  
 
   try {
     const category = await Category.findById(id);
@@ -69,25 +72,40 @@ exports.editCategory = async (req, res) => {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    // Check for duplicate name (excluding current category)
+    // ✅ Check for duplicate name (excluding current category)
     const existing = await Category.findOne({ name, _id: { $ne: id } });
     if (existing) {
       return res.status(400).json({ message: 'Another category with this name already exists' });
     }
 
-    // Update fields
+    // ✅ Update category name
     category.name = name || category.name;
 
-    // If a new image is uploaded, update image URL
+    // ✅ If a new image is uploaded, upload to Cloudinary and replace old one
     if (req.file) {
-      category.image = `http://localhost:5000/uploads/${req.file.filename}`;
+      // If the category already had an image, delete it from Cloudinary
+      if (category.image && category.image.includes('cloudinary.com')) {
+        const publicId = category.image.split('/').slice(-1)[0].split('.')[0];
+        try {
+          await cloudinary.uploader.destroy(`categories/${publicId}`);
+        } catch (err) {
+          console.warn('Failed to delete old image from Cloudinary:', err.message);
+        }
+      }
+
+      // ✅ Save new Cloudinary image URL
+      category.image = req.file.path;
     }
 
     await category.save();
 
-    res.status(200).json(category);
+    res.status(200).json({
+      message: 'Category updated successfully',
+      category,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error updating category:', err);
+    res.status(500).json({ error: 'Failed to update category', details: err.message });
   }
 };
 

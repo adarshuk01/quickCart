@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const discountController = require('../controllers/discountController');
-const upload = require('../middleware/upload');
+const { upload } = require('../config/cloudinary');
+
 
 // Create a new discount and assign products
 router.post('/',upload.single('image'), discountController.createDiscount);
