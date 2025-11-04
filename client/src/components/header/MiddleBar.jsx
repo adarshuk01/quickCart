@@ -15,7 +15,7 @@ const MiddleBar = ({toogleshow}) => {
 
           </button>
           <Link to="/">
-            <img  width={120} src={'/QuickCart/logopng.png'} alt="Logo" className=" w-[90px] lg:w-[120px]" />
+            <img  width={120} src={'/logopng.png'} alt="Logo" className=" w-[90px] lg:w-[120px]" />
           </Link>
         </div>
         <div className="shadow-sm w-1/2 text-gray-600 lg:flex items-center hidden font-light text-sm  pl-4 bg-gray-100 rounded-2xl ">

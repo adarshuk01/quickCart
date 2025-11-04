@@ -20,6 +20,7 @@ const cors = require('cors');
 
 const allowedOrigins = [
   'https://quick-cart-gm6k.vercel.app', // your frontend (client)
+  'https://quick-cart-3eep.vercel.app/',
   'https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app', // your backend (server)
   'http://localhost:5173', // local dev (optional)
 ];
