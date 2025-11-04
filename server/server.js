@@ -18,14 +18,7 @@ require('dotenv').config();
 
 const cors = require('cors');
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      callback(null, origin || true); // reflect the request origin
-    },
-    credentials: true,
-  })
-);
+app.use(cors({ origin: '*', credentials: true }));
 
 
 // Middleware to parse JSON
