@@ -18,7 +18,23 @@ require('dotenv').config();
 
 const cors = require('cors');
 
-app.use(cors({ origin: '*', credentials: true }));
+const allowedOrigins = [
+  'https://quick-cart-gm6k.vercel.app', // your client (frontend)
+  'https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app', // your backend (server)
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
 
 
 // Middleware to parse JSON
