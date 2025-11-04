@@ -19,8 +19,10 @@ require('dotenv').config();
 const cors = require('cors');
 
 const allowedOrigins = [
-  'https://quick-cart-gm6k.vercel.app', // your client (frontend)
-  'https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app', // your backend (server)
+  'https://quick-cart-gm6k.vercel.app', 
+  'https://quick-cart-gm6k-3qxl75p9z-adarshuk01s-projects.vercel.app', // ✅ add this
+  'https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app',
+  'http://localhost:5173', // optional for local testing
 ];
 
 app.use(
