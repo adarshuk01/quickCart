@@ -18,7 +18,25 @@ require('dotenv').config();
 
 const cors = require('cors');
 
-app.use(cors());
+const allowedOrigins = [
+  'https://quick-cart-gm6k.vercel.app', // your frontend (client)
+  'https://quick-cart-isv2uipah-adarshuk01s-projects.vercel.app', // your backend (server)
+  'http://localhost:5173', // local dev (optional)
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -39,7 +57,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Sample route
 app.get('/', (req, res) => {
-    res.send('Hello from Express server!');
+    res.send('Hello from Express server! 33');
 });
 
 app.use("/api/auth", authRoutes);
