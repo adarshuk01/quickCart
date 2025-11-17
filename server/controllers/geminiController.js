@@ -44,27 +44,26 @@ exports.generateContent = async (req, res) => {
   }
 };
 
-// IMAGE GENERATION
+// IMAGE GENERATION (FIXED)
 exports.generateImage = async (req, res) => {
   const { prompt } = req.body;
 
   if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required.' });
+    return res.status(400).json({ error: "Prompt is required." });
   }
 
-  const model = 'gemini-2.0-flash-preview-image-generation';
-  const api = 'generateContent';
+  const model = "gemini-1.5-flash";  // ✅ Supported image generation model
+  const api = "generateContent";
 
   const payload = {
     contents: [
       {
-        role: 'user',
+        role: "user",
         parts: [{ text: prompt }],
       },
     ],
     generationConfig: {
-      responseModalities: ['IMAGE', 'TEXT'],
-      responseMimeType: 'text/plain',
+      response_mime_type: "image/png",  // ✅ MUST for image output
     },
   };
 
@@ -76,36 +75,38 @@ exports.generateImage = async (req, res) => {
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:${api}?key=${GEMINI_API_KEY}`,
         payload,
         {
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      const parts = response.data?.candidates?.[0]?.content?.parts || [];
-      return res.json({ parts });
+      // Extract image data
+      const parts = response.data?.candidates?.[0]?.content?.parts;
+
+      if (!parts) {
+        return res.status(500).json({ error: "No image data returned." });
+      }
+
+      return res.json({ parts }); // base64 png output
     } catch (error) {
       const status = error.response?.status;
       const data = error.response?.data;
 
-      console.error('Gemini Image API Error:', status, data || error.message);
+      console.error("Gemini Image API Error:", status, data || error.message);
 
-      // Retry only for rate-limit errors
+      // Retry only on rate limit
       if (status === 429 && retries > 1) {
-        console.warn(`Rate limit hit. Retrying in 10 seconds... (${retries - 1} retries left)`);
-        await delay(10000);
+        await delay(8000); // 8 sec backoff
         retries--;
         continue;
       }
 
-      if (status === 429) {
-        return res.status(429).json({
-          error: 'Rate limit or quota exceeded. Please try again later.',
-        });
-      }
-
-      return res.status(500).json({
-        error: 'Failed to generate image.',
+      return res.status(status || 500).json({
+        error: "Failed to generate image.",
         details: data?.error?.message || error.message,
       });
     }
   }
 };
+
