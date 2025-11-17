@@ -44,7 +44,7 @@ exports.generateContent = async (req, res) => {
   }
 };
 
-// IMAGE GENERATION (FIXED)
+// IMAGE GENERATION (CORRECT - USING IMAGEN 3)
 exports.generateImage = async (req, res) => {
   const { prompt } = req.body;
 
@@ -52,61 +52,39 @@ exports.generateImage = async (req, res) => {
     return res.status(400).json({ error: "Prompt is required." });
   }
 
-  const model = "gemini-1.5-flash";  // ✅ Supported image generation model
-  const api = "generateContent";
+  const model = "imagen-3.0-generate-001"; // ✅ Imagen 3 (image model)
+  const api = "generateImage";             // ✅ correct API for images
 
   const payload = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: prompt }],
-      },
-    ],
-    generationConfig: {
-      response_mime_type: "image/png",  // ✅ MUST for image output
-    },
+    prompt,
+    // optional:
+    // negativePrompt: "low quality"
   };
 
-  let retries = 3;
+  try {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:${api}?key=${GEMINI_API_KEY}`,
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-  while (retries > 0) {
-    try {
-      const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:${api}?key=${GEMINI_API_KEY}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const images = response.data?.images;
 
-      // Extract image data
-      const parts = response.data?.candidates?.[0]?.content?.parts;
-
-      if (!parts) {
-        return res.status(500).json({ error: "No image data returned." });
-      }
-
-      return res.json({ parts }); // base64 png output
-    } catch (error) {
-      const status = error.response?.status;
-      const data = error.response?.data;
-
-      console.error("Gemini Image API Error:", status, data || error.message);
-
-      // Retry only on rate limit
-      if (status === 429 && retries > 1) {
-        await delay(8000); // 8 sec backoff
-        retries--;
-        continue;
-      }
-
-      return res.status(status || 500).json({
-        error: "Failed to generate image.",
-        details: data?.error?.message || error.message,
-      });
+    if (!images) {
+      return res.status(500).json({ error: "No images returned from API." });
     }
+
+    // images[0].imageBytes is base64 PNG
+    return res.json({
+      image: images[0].imageBytes
+    });
+
+  } catch (error) {
+    console.error("Image API Error:", error.response?.data || error.message);
+
+    return res.status(500).json({
+      error: "Failed to generate image.",
+      details: error.response?.data || error.message,
+    });
   }
 };
-
